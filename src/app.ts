@@ -1,15 +1,24 @@
 import express from "express";
+import config from "config";
 import mongoose from "mongoose";
-import { json } from "body-parser";
-import { todoRouter } from "./routes/todo";
+
+import log from "./logger";
+import connect from "./db";
+import routes from "./routes";
+
+const port = config.get("port") as number;
+const host = config.get("host") as string;
+
 const app = express();
-app.use(json());
-app.use(todoRouter);
 
-mongoose.connect("mongodb://localhost/todo", () => {
-  console.log("connected to mongodb");
-});
+// Parses incoming requests with JSON payloads
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.listen(port, host, () => {
+  log.info(`Server listing at http://${host}:${port}`);
+
+  connect();
+
+  routes(app);
 });
